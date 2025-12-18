@@ -6,10 +6,6 @@
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Admin</h1>
         <p class="text-gray-500 dark:text-gray-400">Ringkasan data transaksi wisata dan parkir.</p>
     </div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Admin</h1>
-        <p class="text-gray-500 dark:text-gray-400">Ringkasan data transaksi wisata dan parkir.</p>
-    </div>
 
     {{-- === BAGIAN 1: KARTU STATISTIK (WARNA-WARNI) === --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
