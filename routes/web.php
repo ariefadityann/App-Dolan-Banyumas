@@ -7,6 +7,7 @@ use App\Http\Controllers\DataTransaksiController;
 use App\Http\Controllers\DataParkirController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginAdminController;
+use App\Http\Controllers\Admin\WisataController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -35,18 +36,9 @@ Route::post('/admins', [AdminController::class, 'store'])->name('admins.store');
 Route::put('/admins/{admin}', [AdminController::class, 'update'])->name('admins.update');
 Route::delete('/admins/{admin}', [AdminController::class, 'destroy'])->name('admins.destroy');  
 
-// Route Data wisata
-Route::middleware(['auth','admin'])->group(function () {
-    Route::resource('admin/wisata', WisataController::class);
-});
-
-Route::get('/wisata', function () {
-    return Wisata::all()->map(function ($w) {
-        $w->gambar = asset('storage/'.$w->gambar);
-        $w->images = collect($w->images)->map(fn($i)=>asset('storage/'.$i));
-        return $w;
-    });
-});
+Route::resource('data-wisata', WisataController::class)
+    ->parameters(['data-wisata' => 'wisata']) // Supaya di Controller pakainya (Wisata $wisata)
+    ->names('wisata');
 
 
 Route::resource('data-transaksi', DataTransaksiController::class)

@@ -1,67 +1,91 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin; // Harus ada \Admin karena di dalam folder Admin
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Controller; // Tambahkan ini agar bisa extend Controller
+
+use App\Models\Wisata;
 use Illuminate\Http\Request;
-use App\Models\Wisata; 
 
 class WisataController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $wisatas = Wisata::all();
-        return view('admin.wisata.index', compact('wisatas'));
+        // --- 1. LOGIKA STATISTIK DASHBOARD ---
+        $totalWisata = Wisata::count();
+        $totalDesaWisata = Wisata::where('kategori', 'Desa Wisata')->count();
+        $totalKuliner = Wisata::where('kategori', 'Kuliner')->count();
+        $totalPenginapan = Wisata::where('kategori', 'Penginapan')->count();
+
+        // --- 2. LOGIKA FILTER & SEARCH ---
+        $query = Wisata::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', '%' . $search . '%')
+                  ->orWhere('alamat', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->input('kategori'));
+        }
+
+        $wisatas = $query->orderBy('created_at', 'desc')->paginate(6)->withQueryString();
+
+        return view('pages.data-wisata', compact(
+            'wisatas', 'totalWisata', 'totalDesaWisata', 'totalKuliner', 'totalPenginapan'
+        ));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'nama' => 'required',
+            'kategori' => 'required',
+            'deskripsi' => 'required',
+            'caption' => 'required',
+            'jarak' => 'nullable',
+            'harga' => 'nullable',
+            'gambar_url' => 'required',
+            'images' => 'nullable|array',
+            'alamat' => 'required',
+            'telepon' => 'nullable',
+            'jam_buka' => 'required',
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+
+        Wisata::create($validated);
+        return redirect()->back()->with('success', 'Data wisata berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Wisata $wisata)
     {
-        //
+        $validated = $request->validate([
+            'nama' => 'required',
+            'kategori' => 'required',
+            'deskripsi' => 'required',
+            'caption' => 'required',
+            'jarak' => 'nullable',
+            'harga' => 'nullable',
+            'gambar_url' => 'required',
+            'images' => 'nullable|array',
+            'alamat' => 'required',
+            'telepon' => 'nullable',
+            'jam_buka' => 'required',
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+
+        $wisata->update($validated);
+        return redirect()->back()->with('success', 'Data wisata berhasil diperbarui.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(Wisata $wisata)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $wisata->delete();
+        return redirect()->back()->with('success', 'Data wisata berhasil dihapus.');
     }
 }
