@@ -35,6 +35,20 @@ Route::post('/admins', [AdminController::class, 'store'])->name('admins.store');
 Route::put('/admins/{admin}', [AdminController::class, 'update'])->name('admins.update');
 Route::delete('/admins/{admin}', [AdminController::class, 'destroy'])->name('admins.destroy');  
 
+// Route Data wisata
+Route::middleware(['auth','admin'])->group(function () {
+    Route::resource('admin/wisata', WisataController::class);
+});
+
+Route::get('/wisata', function () {
+    return Wisata::all()->map(function ($w) {
+        $w->gambar = asset('storage/'.$w->gambar);
+        $w->images = collect($w->images)->map(fn($i)=>asset('storage/'.$i));
+        return $w;
+    });
+});
+
+
 Route::resource('data-transaksi', DataTransaksiController::class)
     ->only(['index', 'update', 'destroy'])
     // --- PERUBAHAN: Pastikan 'transaction' cocok dengan variabel di controller ---
