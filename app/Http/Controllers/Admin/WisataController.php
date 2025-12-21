@@ -33,20 +33,37 @@ class WisataController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required',
-            'kategori' => 'required',
+            'nama'      => 'required',
+            'kategori'  => 'required',
             'deskripsi' => 'required',
-            'caption' => 'required',
-            'jarak' => 'nullable',
-            'harga' => 'nullable',
-            'gambar_url' => 'required',
-            'images' => 'nullable|array',
-            'alamat' => 'required',
-            'telepon' => 'nullable',
-            'jam_buka' => 'required',
-            'lat' => 'required|numeric',
-            'lng' => 'required|numeric',
+            'caption'   => 'required',
+            'alamat'    => 'required',
+            'jam_buka'  => 'required',
+            'lat'       => 'required|numeric',
+            'lng'       => 'required|numeric',
+            'harga'     => 'nullable',
+            'jarak'     => 'nullable',
+            'telepon'   => 'nullable',
         ]);
+
+        // 1. Proses Gambar Utama
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads'), $filename);
+            $validated['gambar_url'] = 'uploads/' . $filename; // Simpan path ke DB
+        }
+
+        // 2. Proses Galeri Foto (3 Gambar)
+        $galleryPaths = [];
+        if ($request->hasFile('images_files')) {
+            foreach ($request->file('images_files') as $file) {
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/gallery'), $filename);
+                $galleryPaths[] = 'uploads/gallery/' . $filename;
+            }
+        }
+        $validated['images'] = $galleryPaths; // Disimpan sebagai array (karena model sudah di-cast)
 
         Wisata::create($validated);
         return redirect()->back()->with('success', 'Data wisata berhasil ditambahkan.');
