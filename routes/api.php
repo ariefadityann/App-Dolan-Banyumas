@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Models\User; 
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\ParkirBookingController;
+use App\Http\Controllers\Admin\WisataApiController;
 
 Route::prefix('dolanbanyumas')->group(function () {
 
@@ -19,6 +20,22 @@ Route::prefix('dolanbanyumas')->group(function () {
     
     // Rute Notifikasi (HARUS PUBLIK agar bisa diakses Midtrans)
     Route::post('/midtrans/notification', [MidtransController::class, 'notificationHandler']);
+
+    // === WISATA API ROUTES (PUBLIC) ===
+    // Get wisata dengan pagination & filter
+    Route::get('/wisata', [WisataApiController::class, 'index']);
+    
+    // Get single wisata by ID
+    Route::get('/wisata/{id}', [WisataApiController::class, 'show']);
+    
+    // Get all wisata tanpa pagination (untuk map/mobile)
+    Route::get('/wisata-all', [WisataApiController::class, 'all']);
+    
+    // Get wisata by kategori
+    Route::get('/wisata/kategori/{kategori}', [WisataApiController::class, 'byKategori']);
+    
+    // Get available categories
+    Route::get('/wisata-categories', [WisataApiController::class, 'categories']);
 
     // --- RUTE YANG DIPROTEKSI ---
     // Semua rute di dalam grup ini memerlukan Token otentikasi
