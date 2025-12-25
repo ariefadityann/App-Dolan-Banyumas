@@ -15,9 +15,9 @@ class AdminController extends Controller
     public function index()
     {
         // Ambil user, TAPI HANYA YANG ROLE-NYA ADMIN
-        $admins = User::select('id', 'username', 'nama_lengkap', 'no_wa', 'role')
+        $admins = User::select('id', 'username', 'email', 'no_wa', 'role')
                        ->where('role', 'admin') // <-- FILTER UTAMA
-                       ->orderBy('nama_lengkap')
+                       ->orderBy('email')
                        ->get();
 
         // Menggunakan view baru 'pages.data-admin'
@@ -32,7 +32,7 @@ class AdminController extends Controller
         // Validasi data (tanpa 'role', karena akan di-set otomatis)
         $validatedData = $request->validate([
             'username' => 'required|string|max:255|unique:users',
-            'nama_lengkap' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users',
             'no_wa' => 'required|string|max:20',
             'password' => 'required|string|min:8|confirmed',
         ]);
@@ -65,7 +65,10 @@ class AdminController extends Controller
                 'required', 'string', 'max:255',
                 Rule::unique('users')->ignore($admin->id),
             ],
-            'nama_lengkap' => 'required|string|max:255',
+            'email' => [
+                'required', 'email', 'max:255',
+                Rule::unique('users')->ignore($admin->id),
+            ],
             'no_wa' => 'required|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
             // 'role' tidak di-update dari sini, akan tetap 'admin'
