@@ -13,6 +13,30 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
+// Serve images dengan CORS headers
+Route::get('/images/{path}', function ($path) {
+    $filePath = public_path('images/' . $path);
+    
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    
+    return response()->file($filePath, [
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+        'Access-Control-Allow-Headers' => '*',
+    ]);
+})->where('path', '.*');
+
+// Handle OPTIONS preflight for images
+Route::options('/images/{path}', function () {
+    return response('', 200, [
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+        'Access-Control-Allow-Headers' => '*',
+    ]);
+})->where('path', '.*');
+
 // Tampilkan Form Login Admin
 Route::get('/login', [LoginAdminController::class, 'showLoginForm'])->name('admin.show_login');
 

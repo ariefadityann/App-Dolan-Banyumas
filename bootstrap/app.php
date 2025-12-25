@@ -12,13 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
    ->withMiddleware(function (Middleware $middleware) {
-    // Tambahkan CORS ke global middleware
+    // Enable CORS middleware
     $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
-
-    // Tambahkan CORS spesifik untuk grup API
-    $middleware->group('api', [
-        \Illuminate\Http\Middleware\HandleCors::class,
-    ]);
 })
 
 
