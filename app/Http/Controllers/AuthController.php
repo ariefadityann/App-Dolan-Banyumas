@@ -19,22 +19,62 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'username' => 'required|unique:users',
-            'email' => 'required|email|unique:users',
-            'no_wa' => 'required',
-            'password' => 'required|min:6',
+            'username' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'no_wa' => 'required|string|max:20',
+            'password' => 'required|string|min:6',
             'password_confirmation' => 'required|same:password',
         ]);
 
-        // Buat user baru (belum verified)
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'no_wa' => $request->no_wa,
-            'password' => Hash::make($request->password),
-            'role' => 'user',
-            'email_verified_at' => null, // Belum verified
-        ]);
+        // Cek apakah email sudah terdaftar
+        $existingUserByEmail = User::where('email', $request->email)->first();
+        
+        // Jika email sudah ada DAN sudah verified
+        if ($existingUserByEmail && $existingUserByEmail->email_verified_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email sudah terdaftar dan terverifikasi. Silakan login atau gunakan email lain.'
+            ], 422);
+        }
+
+        // Cek apakah username sudah digunakan (kecuali oleh user dengan email yang sama)
+        $existingUserByUsername = User::where('username', $request->username)
+                                      ->where('email', '!=', $request->email)
+                                      ->first();
+        
+        if ($existingUserByUsername) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Username sudah terdaftar. Silakan gunakan username lain.'
+            ], 422);
+        }
+
+        // Jika email sudah ada tapi belum verified, update data
+        if ($existingUserByEmail && !$existingUserByEmail->email_verified_at) {
+            // Update user data
+            $existingUserByEmail->update([
+                'username' => $request->username,
+                'no_wa' => $request->no_wa,
+                'password' => Hash::make($request->password),
+            ]);
+            
+            $user = $existingUserByEmail;
+            
+            // Hapus OTP lama
+            OtpVerification::where('email', $request->email)
+                          ->where('type', 'email_verification')
+                          ->delete();
+        } else {
+            // Buat user baru
+            $user = User::create([
+                'username' => $request->username,
+                'email' => $request->email,
+                'no_wa' => $request->no_wa,
+                'password' => Hash::make($request->password),
+                'role' => 'user',
+                'email_verified_at' => null,
+            ]);
+        }
 
         // Generate OTP 6 digit
         $otpCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -107,7 +147,14 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Email berhasil diverifikasi!',
             'data' => [
-                'user' => $user,
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'no_wa' => $user->no_wa,
+                    'role' => $user->role,
+                    'email_verified_at' => $user->email_verified_at,
+                ],
                 'token' => $token,
             ]
         ], 200);
@@ -151,7 +198,14 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Login Berhasil',
             'data' => [
-                'user' => $user,
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'no_wa' => $user->no_wa,
+                    'role' => $user->role,
+                    'email_verified_at' => $user->email_verified_at,
+                ],
                 'token' => $token,
             ]
         ], 200);

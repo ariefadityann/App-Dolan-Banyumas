@@ -10,9 +10,19 @@ use App\Http\Controllers\Admin\WisataApiController;
 
 Route::prefix('dolanbanyumas')->group(function () {
 
-    // Rute Publik (Register/Login)
+    // === AUTHENTICATION ROUTES (PUBLIC) ===
+    // Register & Login
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    
+    // Email Verification
+    Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
+    
+    // Forgot Password
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/verify-forgot-password-otp', [AuthController::class, 'verifyForgotPasswordOtp']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     
     // Rute Pembuatan Transaksi (Bisa juga diproteksi)
     Route::post('/midtrans/transaction', [MidtransController::class, 'createTransaction']);
@@ -40,6 +50,9 @@ Route::prefix('dolanbanyumas')->group(function () {
     // --- RUTE YANG DIPROTEKSI ---
     // Semua rute di dalam grup ini memerlukan Token otentikasi
     Route::middleware('auth:sanctum')->group(function () {
+        
+        // Logout
+        Route::post('/logout', [AuthController::class, 'logout']);
         
         // Rute GET untuk riwayat (Sekarang aman)
         Route::get('/midtrans/transactions', [MidtransController::class, 'getTransactions']);
