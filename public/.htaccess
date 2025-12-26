@@ -1,3 +1,11 @@
+# 1. Tambahkan Bagian Ini di Paling Atas
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
+    Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-xsrf-token"
+</IfModule>
+
+# 2. Sisanya biarkan seperti bawaan Laravel
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
