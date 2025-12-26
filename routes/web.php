@@ -13,6 +13,7 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
+
 // Tampilkan Form Login Admin
 Route::get('/login', [LoginAdminController::class, 'showLoginForm'])->name('admin.show_login');
 
