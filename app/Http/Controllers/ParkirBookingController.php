@@ -25,103 +25,142 @@ class ParkirBookingController extends Controller
 
     public function createBooking(Request $request)
     {
-        // --- PERBAIKAN VALIDASI ---
-        $validator = Validator::make($request->all(), [
-            // Validasi 'first_name' dari Flutter dan cek ke kolom 'nama_lengkap' di DB
-            'first_name' => 'required|string|exists:users,nama_lengkap', 
-
-            // Validasi 'email' dari Flutter, TAPI tidak cek ke DB (karena kolomnya tidak ada)
-            'email' => 'required|email',
-
-            // Validasi booking tetap sama
-            'parking_type' => 'required|string',
-            'plat_nomor' => 'required|string',
-            'jumlah' => 'required|integer|min:1',
-            'total_harga' => 'required|numeric|min:1000',
-            'tanggal_booking' => 'required|date',
-        ]);
-        // --- AKHIR PERBAIKAN VALIDASI ---
-
-        if ($validator->fails()) {
-            return response()->json(['message' => 'Data tidak valid', 'errors' => $validator->errors()], 422);
-        }
-
-        // --- PERBAIKAN PENCARIAN USER ---
-        // Cari user berdasarkan 'nama_lengkap' (yang dikirim sebagai 'first_name' dari Flutter)
-        $user = User::where('nama_lengkap', $request->first_name)->first();
-        // --- AKHIR PERBAIKAN PENCARIAN USER ---
-
-        if (!$user) {
-             // Seharusnya tidak akan terjadi karena sudah divalidasi, tapi ini penjagaan
-             return response()->json(['message' => 'User dengan nama ' . $request->first_name . ' tidak ditemukan.'], 404);
-        }
-
-        $orderId = 'PARK-' . time() . '-' . $user->id; // Baris ini sekarang aman
-
-        // 1. Simpan booking ke database
-        $booking = ParkirBooking::create([
-            'order_id' => $orderId,
-            'user_id' => $user->id, // user_id sekarang didapat dari pencarian nama
-            'parking_type' => $request->parking_type,
-            'plat_nomor' => $request->plat_nomor,
-            'jumlah' => $request->jumlah,
-            'total_harga' => $request->total_harga,
-            'tanggal_booking' => Carbon::parse($request->tanggal_booking)->toDateString(),
-            'status' => 'pending',
-        ]);
-
-        // 2. Siapkan parameter untuk Midtrans
-        $transaction_details = [
-            'order_id' => $orderId,
-            'gross_amount' => $request->total_harga,
-        ];
-
-        $item_details = [
-            [
-                'id' => 'PARK-' . Str::slug($request->parking_type),
-                'price' => $request->total_harga,
-                'quantity' => 1,
-                'name' => 'Booking Parkir: ' . $request->parking_type,
-            ],
-        ];
-
-        // --- PERBAIKAN CUSTOMER DETAILS ---
-        $customer_details = [
-            // Ambil nama dari $user yang ditemukan
-            'first_name' => $user->nama_lengkap, 
-            
-            // Ambil email dari $request (dari Flutter), karena $user tidak punya email
-            'email' => $request->email,
-            
-            // Ambil no_wa dari $user
-            'phone' => $user->no_wa ?? '0800000000', 
-        ];
-        // --- AKHIR PERBAIKAN CUSTOMER DETAILS ---
-
-        $transaction = [
-            'transaction_details' => $transaction_details,
-            'item_details' => $item_details,
-            'customer_details' => $customer_details,
-            'enabled_payments' => ['gopay', 'shopeepay', 'qris', 'bca_va', 'bni_va', 'bri_va'],
-        ];
-
         try {
-            $snap = Snap::createTransaction($transaction);
-            
-            $booking->midtrans_token = $snap->token;
-            $booking->midtrans_url = $snap->redirect_url;
-            $booking->save();
+            // Log incoming request for debugging
+            \Log::info('Parkir Booking Request', ['data' => $request->all()]);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Booking berhasil dibuat.',
-                'booking' => $booking,
-                'redirect_url' => $snap->redirect_url,
+            // --- PERBAIKAN VALIDASI ---
+            $validator = Validator::make($request->all(), [
+                // Validasi 'username' dari Flutter (bukan first_name lagi)
+                // Atau bisa juga pakai email jika Flutter mengirim email
+                'username' => 'required|string|exists:users,username', 
+                'email' => 'required|email',
+
+                // Validasi booking tetap sama
+                'parking_type' => 'required|string',
+                'plat_nomor' => 'required|string',
+                'jumlah' => 'required|integer|min:1',
+                'total_harga' => 'required|numeric|min:1000',
+                'tanggal_booking' => 'required|date',
+            ]);
+            // --- AKHIR PERBAIKAN VALIDASI ---
+
+            if ($validator->fails()) {
+                \Log::warning('Parkir Booking Validation Failed', ['errors' => $validator->errors()]);
+                return response()->json(['message' => 'Data tidak valid', 'errors' => $validator->errors()], 422);
+            }
+
+            // --- PERBAIKAN PENCARIAN USER ---
+            // Cari user berdasarkan 'username' (yang dikirim dari Flutter)
+            $user = User::where('username', $request->username)->first();
+            // --- AKHIR PERBAIKAN PENCARIAN USER ---
+
+            if (!$user) {
+                \Log::warning('User not found', ['username' => $request->username]);
+                return response()->json(['message' => 'User dengan username ' . $request->username . ' tidak ditemukan.'], 404);
+            }
+
+            $orderId = 'PARK-' . time() . '-' . $user->id;
+            \Log::info('Creating booking', ['order_id' => $orderId, 'user_id' => $user->id]);
+
+            // 1. Simpan booking ke database
+            $booking = ParkirBooking::create([
+                'order_id' => $orderId,
+                'user_id' => $user->id,
+                'parking_type' => $request->parking_type,
+                'plat_nomor' => $request->plat_nomor,
+                'jumlah' => $request->jumlah,
+                'total_harga' => $request->total_harga,
+                'tanggal_booking' => Carbon::parse($request->tanggal_booking)->toDateString(),
+                'status' => 'pending',
             ]);
 
+            \Log::info('Booking created in database', ['booking_id' => $booking->id]);
+
+            // 2. Siapkan parameter untuk Midtrans
+            $transaction_details = [
+                'order_id' => $orderId,
+                'gross_amount' => $request->total_harga,
+            ];
+
+            $item_details = [
+                [
+                    'id' => 'PARK-' . Str::slug($request->parking_type),
+                    'price' => $request->total_harga,
+                    'quantity' => 1,
+                    'name' => 'Booking Parkir: ' . $request->parking_type,
+                ],
+            ];
+
+            // --- PERBAIKAN CUSTOMER DETAILS ---
+            $customer_details = [
+                // Gunakan username sebagai first_name
+                'first_name' => $user->username, 
+                
+                // Gunakan email dari user atau dari request
+                'email' => $user->email ?? $request->email,
+                
+                // Ambil no_wa dari $user
+                'phone' => $user->no_wa ?? '0800000000', 
+            ];
+            // --- AKHIR PERBAIKAN CUSTOMER DETAILS ---
+
+            $transaction = [
+                'transaction_details' => $transaction_details,
+                'item_details' => $item_details,
+                'customer_details' => $customer_details,
+                'enabled_payments' => ['gopay', 'shopeepay', 'qris', 'bca_va', 'bni_va', 'bri_va'],
+            ];
+
+            \Log::info('Calling Midtrans Snap API', ['transaction' => $transaction]);
+
+            try {
+                $snap = Snap::createTransaction($transaction);
+                
+                $booking->midtrans_token = $snap->token;
+                $booking->midtrans_url = $snap->redirect_url;
+                $booking->save();
+
+                \Log::info('Midtrans transaction created successfully', [
+                    'order_id' => $orderId,
+                    'token' => $snap->token
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Booking berhasil dibuat.',
+                    'booking' => $booking,
+                    'redirect_url' => $snap->redirect_url,
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error('Midtrans API Error', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                $booking->delete();
+                return response()->json([
+                    'message' => 'Gagal membuat transaksi Midtrans', 
+                    'error' => $e->getMessage(),
+                    'hint' => 'Periksa konfigurasi Midtrans di .env'
+                ], 500);
+            }
+
         } catch (\Exception $e) {
-            $booking->delete();
-            return response()->json(['message' => 'Gagal membuat transaksi Midtrans', 'error' => $e->getMessage()], 500);
+            \Log::error('Parkir Booking Error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Terjadi kesalahan server',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
         }
     }
     public function getAllBookings()
@@ -138,7 +177,8 @@ class ParkirBookingController extends Controller
             // ->where('parkir_bookings.status', 'success') // Hanya tampilkan yang sukses
             ->select(
                 'parkir_bookings.*', 
-                'users.nama_lengkap' // Ambil nama_lengkap user
+                'users.username', // Ambil username user
+                'users.email' // Ambil email user juga
             )
             ->orderBy('parkir_bookings.created_at', 'desc')
             ->get();
