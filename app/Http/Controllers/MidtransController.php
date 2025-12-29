@@ -168,8 +168,8 @@ class MidtransController extends Controller
             return response()->json(['success' => false, 'message' => 'Tidak terotentikasi'], 401);
         }
 
-        // Cari transaksi berdasarkan nama_lengkap user
-        $transactions = Transaction::where('user_name', $user->nama_lengkap)
+        // Cari transaksi berdasarkan username user
+        $transactions = Transaction::where('user_name', $user->username)
             // ->where('status', 'success') // Hanya tampilkan yang sukses
             ->orderBy('created_at', 'desc')
             ->get();
@@ -211,7 +211,7 @@ class MidtransController extends Controller
             // karena di createTransaction Anda menyimpan 'user_name'
             // ==========================================================
             $booking = Transaction::where('order_id', $order_id)
-                                ->where('user_name', $user->nama_lengkap)
+                                ->where('user_name', $user->username)
                                 ->first();
         }
 
