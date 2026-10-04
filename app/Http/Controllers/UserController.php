@@ -15,9 +15,9 @@ class UserController extends Controller
     public function index()
     {
         // --- PERUBAHAN: Filter hanya role 'user' ---
-        $users = User::select('id', 'username', 'nama_lengkap', 'no_wa', 'role')
+        $users = User::select('id', 'username', 'email', 'no_wa', 'role')
                      ->where('role', 'user') // <--- Hanya tampilkan user biasa
-                     ->orderBy('nama_lengkap')
+                     ->orderBy('email')
                      ->get();
 
         return view('pages.data-user', compact('users')); 
@@ -30,7 +30,7 @@ class UserController extends Controller
     {
         $validatedData = $request->validate([
             'username' => 'required|string|max:255|unique:users',
-            'nama_lengkap' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
             'no_wa' => 'required|string|max:20',
             // Role kita hapus dari validasi input, karena kita set otomatis di bawah
             'password' => 'required|string|min:8|confirmed',
@@ -65,7 +65,13 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
-            'nama_lengkap' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->id),
+            ],
             'no_wa' => 'required|string|max:20',
             // Role tidak diizinkan diubah lewat form ini
             'password' => 'nullable|string|min:8|confirmed',

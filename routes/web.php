@@ -21,15 +21,47 @@ Route::get('/images/{path}', function ($path) {
         abort(404);
     }
     
+    $mimeType = mime_content_type($filePath);
+    
     return response()->file($filePath, [
+        'Content-Type' => $mimeType,
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+        'Access-Control-Allow-Headers' => '*',
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('path', '.*');
+
+// Handle OPTIONS preflight for images
+Route::options('/images/{path}', function () {
+    return response('', 200, [
         'Access-Control-Allow-Origin' => '*',
         'Access-Control-Allow-Methods' => 'GET, OPTIONS',
         'Access-Control-Allow-Headers' => '*',
     ]);
 })->where('path', '.*');
 
-// Handle OPTIONS preflight for images
-Route::options('/images/{path}', function () {
+// Serve uploads dengan CORS headers
+Route::get('/uploads/{path}', function ($path) {
+    $filePath = public_path('uploads/' . $path);
+    
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    
+    $mimeType = mime_content_type($filePath);
+    
+    return response()->file($filePath, [
+        'Content-Type' => $mimeType,
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+        'Access-Control-Allow-Headers' => '*',
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('path', '.*');
+
+// Handle OPTIONS preflight for uploads
+Route::options('/uploads/{path}', function () {
     return response('', 200, [
         'Access-Control-Allow-Origin' => '*',
         'Access-Control-Allow-Methods' => 'GET, OPTIONS',

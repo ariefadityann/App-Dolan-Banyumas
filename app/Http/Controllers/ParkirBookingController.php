@@ -27,8 +27,8 @@ class ParkirBookingController extends Controller
     {
         // --- PERBAIKAN VALIDASI ---
         $validator = Validator::make($request->all(), [
-            // Validasi 'first_name' dari Flutter dan cek ke kolom 'nama_lengkap' di DB
-            'first_name' => 'required|string|exists:users,nama_lengkap', 
+            // Validasi 'first_name' dari Flutter dan cek ke kolom 'username' di DB
+            'first_name' => 'required|string|exists:users,username', 
 
             // Validasi 'email' dari Flutter, TAPI tidak cek ke DB (karena kolomnya tidak ada)
             'email' => 'required|email',
@@ -47,8 +47,8 @@ class ParkirBookingController extends Controller
         }
 
         // --- PERBAIKAN PENCARIAN USER ---
-        // Cari user berdasarkan 'nama_lengkap' (yang dikirim sebagai 'first_name' dari Flutter)
-        $user = User::where('nama_lengkap', $request->first_name)->first();
+        // Cari user berdasarkan 'username' (yang dikirim sebagai 'first_name' dari Flutter)
+        $user = User::where('username', $request->first_name)->first(); //ubah di sini saya
         // --- AKHIR PERBAIKAN PENCARIAN USER ---
 
         if (!$user) {
@@ -88,7 +88,7 @@ class ParkirBookingController extends Controller
         // --- PERBAIKAN CUSTOMER DETAILS ---
         $customer_details = [
             // Ambil nama dari $user yang ditemukan
-            'first_name' => $user->nama_lengkap, 
+            'first_name' => $user->username, 
             
             // Ambil email dari $request (dari Flutter), karena $user tidak punya email
             'email' => $request->email,
@@ -138,7 +138,7 @@ class ParkirBookingController extends Controller
             // ->where('parkir_bookings.status', 'success') // Hanya tampilkan yang sukses
             ->select(
                 'parkir_bookings.*', 
-                'users.nama_lengkap' // Ambil nama_lengkap user
+                'users.username' // Ambil username user
             )
             ->orderBy('parkir_bookings.created_at', 'desc')
             ->get();

@@ -48,7 +48,7 @@
                 <tr>
                     <th scope="col" class="px-6 py-3">No</th>
                     <th scope="col" class="px-6 py-3">Username</th>
-                    <th scope="col" class="px-6 py-3">Nama Lengkap</th>
+                    <th scope="col" class="px-6 py-3">Email</th>
                     <th scope="col" class="px-6 py-3">No. WA</th>
                     <th scope="col" class="px-6 py-3">Role</th> {{-- Role Ditampilkan Kembali --}}
                     <th scope="col" class="px-6 py-3">Aksi</th>
@@ -63,7 +63,7 @@
                             {{ $user->username }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $user->nama_lengkap }}
+                            {{ $user->email }}
                         </td>
                         <td class="px-6 py-4">
                             {{ $user->no_wa }}
@@ -120,8 +120,8 @@
                                             <input type="text" name="username" id="username-edit-{{ $user->id }}" value="{{ old('username', $user->username) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
                                         </div>
                                         <div class="col-span-1">
-                                            <label for="nama_lengkap-edit-{{ $user->id }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Lengkap</label>
-                                            <input type="text" name="nama_lengkap" id="nama_lengkap-edit-{{ $user->id }}" value="{{ old('nama_lengkap', $user->nama_lengkap) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                                            <label for="email-edit-{{ $user->id }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                                            <input type="email" name="email" id="email-edit-{{ $user->id }}" value="{{ old('email', $user->email) }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
                                         </div>
                                         {{-- No WA Full Width --}}
                                         <div class="col-span-2">
@@ -187,8 +187,8 @@
                             <input type="text" name="username" id="username-tambah" value="{{ old('username') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
                         </div>
                         <div class="col-span-1">
-                            <label for="nama_lengkap-tambah" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Lengkap</label>
-                            <input type="text" name="nama_lengkap" id="nama_lengkap-tambah" value="{{ old('nama_lengkap') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                            <label for="email-tambah" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                            <input type="email" name="email" id="email-tambah" value="{{ old('email') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
                         </div>
                         {{-- No WA Full Width --}}
                         <div class="col-span-2">
