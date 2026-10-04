@@ -64,8 +64,8 @@
 
             {{-- MODAL EDIT --}}
             <div id="edit-modal-{{ $w->id }}" tabindex="-1" class="hidden fixed inset-0 z-50 overflow-y-auto bg-gray-900/50">
-                <div class="flex items-start justify-center min-h-screen p-4 pt-20">
-                    <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6">
+                <div class="flex items-start justify-center min-h-screen p-4 pt-80">
+                    <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl p-6 pt-8">
                         <h3 class="text-xl font-bold mb-4 dark:text-white border-b pb-2">Edit Data: {{ $w->nama }}</h3>
                         <form action="{{ route('wisata.update', $w->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf @method('PUT')
@@ -85,7 +85,6 @@
                                 </div>
                                 <div><label class="block text-sm font-medium dark:text-white">Harga</label><input type="text" name="harga" value="{{ $w->harga }}" class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></div>
                                 
-                                {{-- INPUT BARU: TELEPON & JAM BUKA (EDIT) --}}
                                 <div><label class="block text-sm font-medium dark:text-white">Telepon</label><input type="text" name="telepon" value="{{ $w->telepon }}" class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></div>
                                 <div><label class="block text-sm font-medium dark:text-white">Jam Buka</label><input type="text" name="jam_buka" value="{{ $w->jam_buka }}" required class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></div>
                                 <div>
@@ -99,26 +98,63 @@
                                         <img id="prev-main-{{ $w->id }}" src="{{ asset($w->gambar_url) }}" class="w-20 h-16 object-cover rounded border">
                                         <input type="file" name="image_file" accept="image/*" onchange="previewImage(this, 'prev-main-{{ $w->id }}')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 dark:text-gray-400">
                                     </div>
-                                    <input type="hidden" name="gambar_url" value="{{ $w->gambar_url }}">
                                 </div>
 
                                 <div class="col-span-3"><label class="block text-sm font-medium dark:text-white">Alamat</label><input type="text" name="alamat" value="{{ $w->alamat }}" class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></div>
                                 
+                                {{-- GALERI FOTO - EDIT (3 INPUT TERPISAH) --}}
                                 <div class="col-span-3">
-                                    <label class="block text-sm font-medium dark:text-white mb-2">Galeri Foto</label>
-                                    <div id="edit-images-container-{{ $w->id }}" class="space-y-3">
-                                        @if($w->images)
-                                            @foreach($w->images as $img)
-                                            <div class="flex-gallery-item flex gap-2 items-center bg-gray-50 p-2 rounded dark:bg-gray-700">
-                                                <img src="{{ asset($img) }}" class="w-12 h-10 object-cover rounded border">
-                                                <span class="text-xs text-gray-500 truncate flex-1 dark:text-gray-400">{{ $img }}</span>
-                                                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 px-2">✕</button>
-                                                <input type="hidden" name="images_old[]" value="{{ $img }}">
-                                            </div>
-                                            @endforeach
-                                        @endif
+                                    <label class="block text-sm font-medium dark:text-white mb-2">Galeri Foto (Maksimal 3)</label>
+                                    
+                                    {{-- Galeri 1 --}}
+                                    <div class="mb-3 p-3 bg-gray-50 rounded dark:bg-gray-700">
+                                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Galeri 1</label>
+                                        <div class="flex gap-3 items-center">
+                                            @if(isset($w->images[0]))
+                                                <img id="prev-gal1-{{ $w->id }}" src="{{ asset($w->images[0]) }}" class="w-16 h-14 object-cover rounded border">
+                                                <input type="hidden" name="images_old_1" value="{{ $w->images[0] }}">
+                                            @else
+                                                <img id="prev-gal1-{{ $w->id }}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70'%3E%3Crect fill='%23e5e7eb' width='80' height='70'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='12' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EKosong%3C/text%3E%3C/svg%3E" class="w-16 h-14 object-cover rounded border">
+                                            @endif
+                                            <input type="file" name="gallery_1" accept="image/*" 
+                                                   onchange="previewImage(this, 'prev-gal1-{{ $w->id }}')" 
+                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400">
+                                        </div>
                                     </div>
-                                    <button type="button" onclick="addImageInput('edit-images-container-{{ $w->id }}')" class="mt-2 text-sm text-blue-500 font-semibold">+ Tambah File Galeri</button>
+
+                                    {{-- Galeri 2 --}}
+                                    <div class="mb-3 p-3 bg-gray-50 rounded dark:bg-gray-700">
+                                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Galeri 2</label>
+                                        <div class="flex gap-3 items-center">
+                                            @if(isset($w->images[1]))
+                                                <img id="prev-gal2-{{ $w->id }}" src="{{ asset($w->images[1]) }}" class="w-16 h-14 object-cover rounded border">
+                                                <input type="hidden" name="images_old_2" value="{{ $w->images[1] }}">
+                                            @else
+                                                <img id="prev-gal2-{{ $w->id }}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70'%3E%3Crect fill='%23e5e7eb' width='80' height='70'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='12' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EKosong%3C/text%3E%3C/svg%3E" class="w-16 h-14 object-cover rounded border">
+                                            @endif
+                                            <input type="file" name="gallery_2" accept="image/*" 
+                                                   onchange="previewImage(this, 'prev-gal2-{{ $w->id }}')" 
+                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400">
+                                        </div>
+                                    </div>
+
+                                    {{-- Galeri 3 --}}
+                                    <div class="mb-3 p-3 bg-gray-50 rounded dark:bg-gray-700">
+                                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Galeri 3</label>
+                                        <div class="flex gap-3 items-center">
+                                            @if(isset($w->images[2]))
+                                                <img id="prev-gal3-{{ $w->id }}" src="{{ asset($w->images[2]) }}" class="w-16 h-14 object-cover rounded border">
+                                                <input type="hidden" name="images_old_3" value="{{ $w->images[2] }}">
+                                            @else
+                                                <img id="prev-gal3-{{ $w->id }}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70'%3E%3Crect fill='%23e5e7eb' width='80' height='70'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='12' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EKosong%3C/text%3E%3C/svg%3E" class="w-16 h-14 object-cover rounded border">
+                                            @endif
+                                            <input type="file" name="gallery_3" accept="image/*" 
+                                                   onchange="previewImage(this, 'prev-gal3-{{ $w->id }}')" 
+                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400">
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-xs text-gray-500 italic dark:text-gray-400">*Kosongkan jika tidak ingin mengubah gambar</p>
                                 </div>
 
                                 <div class="col-span-3"><label class="block text-sm font-medium dark:text-white">Caption</label><textarea name="caption" rows="2" class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white">{{ $w->caption }}</textarea></div>
@@ -163,7 +199,6 @@
                     </div>
                     <div><label class="block text-sm font-medium dark:text-white">Harga</label><input type="text" name="harga" class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></div>
                     
-                    {{-- INPUT BARU: TELEPON & JAM BUKA (TAMBAH) --}}
                     <div><label class="block text-sm font-medium dark:text-white">Telepon</label><input type="text" name="telepon" class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></div>
                     <div><label class="block text-sm font-medium dark:text-white">Jam Buka</label><input type="text" name="jam_buka" required placeholder="Contoh: 08:00 - 17:00" class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></div>
                     <div>
@@ -176,19 +211,49 @@
                     <div class="col-span-3">
                         <label class="block text-sm font-medium dark:text-white">Gambar Utama</label>
                         <div class="flex gap-3 items-center mt-1">
-                            <img id="prev-add-main" src="https://via.placeholder.com/150" class="w-20 h-16 object-cover rounded border">
+                            <img id="prev-add-main" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='120'%3E%3Crect fill='%23ddd' width='150' height='120'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='14' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E" class="w-20 h-16 object-cover rounded border">
                             <input type="file" name="image_file" accept="image/*" required onchange="previewImage(this, 'prev-add-main')" class="block w-full text-sm text-gray-500 file:mr-4 dark:text-gray-400">
                         </div>
-                        {{-- Hidden field untuk menyesuaikan Controller lama Anda yang butuh 'gambar_url' --}}
-                        <input type="hidden" name="gambar_url" value="pending">
                     </div>
 
                     <div class="col-span-3"><label class="block text-sm font-medium dark:text-white">Alamat</label><input type="text" name="alamat" required class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></div>
 
+                    {{-- GALERI FOTO - TAMBAH (3 INPUT TERPISAH) --}}
                     <div class="col-span-3">
-                        <label class="block text-sm font-medium dark:text-white mb-2">Galeri Foto</label>
-                        <div id="add-images-container" class="space-y-3"></div>
-                        <button type="button" onclick="addImageInput('add-images-container')" class="mt-2 text-sm text-blue-500 font-semibold">+ Tambah File Galeri</button>
+                        <label class="block text-sm font-medium dark:text-white mb-2">Galeri Foto (Opsional, Maks 3)</label>
+                        
+                        {{-- Galeri 1 --}}
+                        <div class="mb-3 p-3 bg-gray-50 rounded dark:bg-gray-700">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Galeri 1</label>
+                            <div class="flex gap-3 items-center">
+                                <img id="prev-add-gal1" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70'%3E%3Crect fill='%23e5e7eb' width='80' height='70'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='12' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EKosong%3C/text%3E%3C/svg%3E" class="w-16 h-14 object-cover rounded border">
+                                <input type="file" name="gallery_1" accept="image/*" 
+                                       onchange="previewImage(this, 'prev-add-gal1')" 
+                                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400">
+                            </div>
+                        </div>
+
+                        {{-- Galeri 2 --}}
+                        <div class="mb-3 p-3 bg-gray-50 rounded dark:bg-gray-700">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Galeri 2</label>
+                            <div class="flex gap-3 items-center">
+                                <img id="prev-add-gal2" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70'%3E%3Crect fill='%23e5e7eb' width='80' height='70'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='12' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EKosong%3C/text%3E%3C/svg%3E" class="w-16 h-14 object-cover rounded border">
+                                <input type="file" name="gallery_2" accept="image/*" 
+                                       onchange="previewImage(this, 'prev-add-gal2')" 
+                                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400">
+                            </div>
+                        </div>
+
+                        {{-- Galeri 3 --}}
+                        <div class="mb-3 p-3 bg-gray-50 rounded dark:bg-gray-700">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Galeri 3</label>
+                            <div class="flex gap-3 items-center">
+                                <img id="prev-add-gal3" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70'%3E%3Crect fill='%23e5e7eb' width='80' height='70'/%3E%3Ctext fill='%23999' font-family='sans-serif' font-size='12' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EKosong%3C/text%3E%3C/svg%3E" class="w-16 h-14 object-cover rounded border">
+                                <input type="file" name="gallery_3" accept="image/*" 
+                                       onchange="previewImage(this, 'prev-add-gal3')" 
+                                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-span-3"><label class="block text-sm font-medium dark:text-white">Caption</label><textarea name="caption" rows="2" required class="w-full border rounded-lg p-2 mt-1 dark:bg-gray-700 dark:text-white"></textarea></div>
@@ -206,74 +271,53 @@
     </div>
 </div>
 <div class="mt-4">{{ $wisatas->links() }}</div>
+
 <script>
-    const originalSrcs = {};
+const originalSrcs = {};
 
-    function previewImage(input, targetId) {
-        const preview = document.getElementById(targetId);
-        if (!originalSrcs[targetId]) originalSrcs[targetId] = preview.src;
+function previewImage(input, targetId) {
+    const preview = document.getElementById(targetId);
+    if (!originalSrcs[targetId]) originalSrcs[targetId] = preview.src;
 
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => preview.src = e.target.result;
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            preview.src = originalSrcs[targetId];
-        }
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => preview.src = e.target.result;
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = originalSrcs[targetId];
     }
+}
 
-    function addImageInput(containerId) {
-        const container = document.getElementById(containerId);
-        if (container.querySelectorAll('.flex-gallery-item').length >= 3) {
-            alert("Maksimal 3 gambar galeri.");
-            return;
-        }
-        const uniqueId = Date.now();
-        const div = document.createElement('div');
-        div.className = 'flex-gallery-item flex gap-2 items-center bg-gray-50 p-2 rounded dark:bg-gray-700';
-        div.innerHTML = `
-            <img id="prev-gal-${uniqueId}" src="https://via.placeholder.com/80" class="w-12 h-10 object-cover rounded border">
-            <input type="file" name="images_files[]" accept="image/*" required onchange="previewImage(this, 'prev-gal-${uniqueId}')" class="block w-full text-xs text-gray-500">
-            <button type="button" onclick="this.parentElement.remove()" class="text-red-500 px-2 font-bold">✕</button>`;
-        container.appendChild(div);
-    }
+function updateOptions(katId, deskId) {
+    const kategori = document.getElementById(katId).value;
+    const deskSelect = document.getElementById(deskId);
+    const selectedOld = deskSelect.getAttribute('data-selected');
+    
+    deskSelect.innerHTML = '';
+    let options = [];
 
-    function updateOptions(katId, deskId) {
-        const kategori = document.getElementById(katId).value;
-        const deskSelect = document.getElementById(deskId);
-        const selectedOld = deskSelect.getAttribute('data-selected');
-        
-        deskSelect.innerHTML = '';
-        let options = [];
+    if (kategori === "Desa Wisata") options = ["Desa Wisata"];
+    else if (kategori === "Wisata") options = ["Wisata Alam", "Wisata Buatan"];
+    else if (kategori === "Kuliner") options = ["Kafe", "Resto"];
+    else if (kategori === "Oleh-Oleh") options = ["Pakaian", "Makanan"];
+    else if (kategori === "Penginapan") options = ["Hotel"];
 
-        if (kategori === "Desa Wisata") options = ["Desa Wisata"];
-        else if (kategori === "Wisata") options = ["Wisata Alam", "Wisata Buatan"];
-        else if (kategori === "Kuliner") options = ["Kafe", "Resto"];
-        else if (kategori === "Oleh-Oleh") options = ["Pakaian", "Makanan"];
-        else if (kategori === "Penginapan") options = ["Hotel"];
-
-        options.forEach(val => {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.textContent = val;
-            if (val === selectedOld) opt.selected = true;
-            deskSelect.appendChild(opt);
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('[id^="edit-kategori-"]').forEach(select => {
-            const id = select.id.replace('edit-kategori-', '');
-            updateOptions(select.id, 'edit-deskripsi-' + id);
-        });
+    options.forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        if (val === selectedOld) opt.selected = true;
+        deskSelect.appendChild(opt);
     });
+}
 
-    document.addEventListener('submit', function(e) {
-        const galContainer = e.target.querySelector('[id*="-images-container"]');
-        if (galContainer && galContainer.querySelectorAll('.flex-gallery-item').length !== 3) {
-            alert("Galeri foto harus berisi tepat 3 gambar.");
-            e.preventDefault();
-        }
+// Inisialisasi saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    // Update dropdown deskripsi di modal edit
+    document.querySelectorAll('[id^="edit-kategori-"]').forEach(select => {
+        const id = select.id.replace('edit-kategori-', '');
+        updateOptions(select.id, 'edit-deskripsi-' + id);
     });
+});
 </script>
 @endsection

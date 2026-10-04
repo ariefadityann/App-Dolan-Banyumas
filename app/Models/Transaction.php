@@ -22,6 +22,15 @@ class Transaction extends Model
         'snap_token'
     ];
 
+    /**
+     * Cast attributes to proper data types
+     */
+    protected $casts = [
+        'total_tickets' => 'integer',
+        'total_price' => 'float',
+        'visit_date' => 'date',
+    ];
+
    /*
     * HAPUS ATAU KOMENTARI FUNGSI INI KARENA TIDAK ADA KOLOM 'id_user'
     *

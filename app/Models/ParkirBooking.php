@@ -22,6 +22,16 @@ class ParkirBooking extends Model
         'midtrans_url',
     ];
 
+    /**
+     * Cast attributes to proper data types
+     */
+    protected $casts = [
+        'user_id' => 'integer',
+        'jumlah' => 'integer',
+        'total_harga' => 'float',
+        'tanggal_booking' => 'date',
+    ];
+
     // Relasi ke User
     public function user()
     {

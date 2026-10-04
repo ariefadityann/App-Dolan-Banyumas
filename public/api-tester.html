@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wisata API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .api-tester {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .endpoint-group {
+            margin-bottom: 30px;
+        }
+
+        .endpoint-group h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .endpoint-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .endpoint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .method {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .endpoint-url {
+            font-family: 'Courier New', monospace;
+            color: #333;
+            font-size: 1.1em;
+            flex-grow: 1;
+            margin: 0 15px;
+        }
+
+        .test-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .test-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .test-btn:active {
+            transform: translateY(0);
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .params {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .params label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .params input, .params select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .response-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .response-container.show {
+            display: block;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .response-title {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+
+        .copy-btn {
+            background: #4ec9b0;
+            color: #1e1e1e;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: bold;
+            padding: 20px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .status-200 {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-404 {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .status-500 {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏖️ Wisata API Tester</h1>
+
+        <div class="api-tester">
+            <div class="endpoint-group">
+                <h2>📋 List & Search</h2>
+                
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <span class="endpoint-url">/api/dolanbanyumas/wisata</span>
+                        <button class="test-btn" onclick="testEndpoint('wisata', 'list')">Test API</button>
+                    </div>
+                    <p class="description">Get wisata dengan pagination dan filter</p>
+                    <div class="params">
+                        <label>Search (nama/alamat):</label>
+                        <input type="text" id="search-list" placeholder="Contoh: curug">
+                        
+                        <label>Kategori:</label>
+                        <input type="text" id="kategori-list" placeholder="Contoh: Alam">
+                        
+                        <label>Per Page:</label>
+                        <input type="number" id="per-page" value="10" min="1">
+                    </div>
+                </div>
+
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <span class="endpoint-url">/api/dolanbanyumas/wisata-all</span>
+                        <button class="test-btn" onclick="testEndpoint('wisata-all', 'all')">Test API</button>
+                    </div>
+                    <p class="description">Get semua wisata tanpa pagination (untuk map/mobile)</p>
+                    <div class="params">
+                        <label>Search:</label>
+                        <input type="text" id="search-all" placeholder="Contoh: curug">
+                        
+                        <label>Kategori:</label>
+                        <input type="text" id="kategori-all" placeholder="Contoh: Alam">
+                    </div>
+                </div>
+            </div>
+
+            <div class="endpoint-group">
+                <h2>🔍 Detail & Filter</h2>
+                
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <span class="endpoint-url">/api/dolanbanyumas/wisata/{id}</span>
+                        <button class="test-btn" onclick="testEndpoint('wisata', 'detail')">Test API</button>
+                    </div>
+                    <p class="description">Get detail wisata berdasarkan ID</p>
+                    <div class="params">
+                        <label>Wisata ID:</label>
+                        <input type="number" id="wisata-id" value="1" min="1">
+                    </div>
+                </div>
+
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <span class="endpoint-url">/api/dolanbanyumas/wisata/kategori/{kategori}</span>
+                        <button class="test-btn" onclick="testEndpoint('wisata/kategori', 'kategori')">Test API</button>
+                    </div>
+                    <p class="description">Get wisata berdasarkan kategori</p>
+                    <div class="params">
+                        <label>Kategori:</label>
+                        <input type="text" id="kategori-filter" value="Alam" placeholder="Alam, Budaya, Kuliner, dll">
+                    </div>
+                </div>
+
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <span class="endpoint-url">/api/dolanbanyumas/wisata-categories</span>
+                        <button class="test-btn" onclick="testEndpoint('wisata-categories', 'categories')">Test API</button>
+                    </div>
+                    <p class="description">Get daftar kategori wisata yang tersedia</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="response-container" class="response-container">
+            <div class="response-header">
+                <span class="response-title">Response:</span>
+                <button class="copy-btn" onclick="copyResponse()">Copy JSON</button>
+            </div>
+            <pre id="response-output"></pre>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin;
+
+        async function testEndpoint(endpoint, type) {
+            const responseContainer = document.getElementById('response-container');
+            const responseOutput = document.getElementById('response-output');
+            
+            responseContainer.classList.add('show');
+            responseOutput.textContent = 'Loading...';
+
+            let url = `${BASE_URL}/api/dolanbanyumas/${endpoint}`;
+            
+            // Build URL based on type
+            switch(type) {
+                case 'list':
+                    const search = document.getElementById('search-list').value;
+                    const kategori = document.getElementById('kategori-list').value;
+                    const perPage = document.getElementById('per-page').value;
+                    
+                    const params = new URLSearchParams();
+                    if (search) params.append('search', search);
+                    if (kategori) params.append('kategori', kategori);
+                    if (perPage) params.append('per_page', perPage);
+                    
+                    if (params.toString()) url += '?' + params.toString();
+                    break;
+                    
+                case 'all':
+                    const searchAll = document.getElementById('search-all').value;
+                    const kategoriAll = document.getElementById('kategori-all').value;
+                    
+                    const paramsAll = new URLSearchParams();
+                    if (searchAll) paramsAll.append('search', searchAll);
+                    if (kategoriAll) paramsAll.append('kategori', kategoriAll);
+                    
+                    if (paramsAll.toString()) url += '?' + paramsAll.toString();
+                    break;
+                    
+                case 'detail':
+                    const id = document.getElementById('wisata-id').value;
+                    url = `${BASE_URL}/api/dolanbanyumas/wisata/${id}`;
+                    break;
+                    
+                case 'kategori':
+                    const kategoriFilter = document.getElementById('kategori-filter').value;
+                    url = `${BASE_URL}/api/dolanbanyumas/wisata/kategori/${kategoriFilter}`;
+                    break;
+            }
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                const statusClass = response.ok ? 'status-200' : (response.status === 404 ? 'status-404' : 'status-500');
+                const statusBadge = `<span class="status-badge ${statusClass}">Status: ${response.status}</span>\n\n`;
+                
+                responseOutput.innerHTML = statusBadge + 'URL: ' + url + '\n\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseOutput.textContent = `Error: ${error.message}\n\nURL: ${url}`;
+            }
+        }
+
+        function copyResponse() {
+            const responseText = document.getElementById('response-output').textContent;
+            navigator.clipboard.writeText(responseText).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

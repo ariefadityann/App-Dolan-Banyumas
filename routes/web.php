@@ -16,13 +16,13 @@ Route::get('/', function () {
 // Serve images dengan CORS headers
 Route::get('/images/{path}', function ($path) {
     $filePath = public_path('images/' . $path);
-    
+
     if (!file_exists($filePath)) {
         abort(404);
     }
-    
+
     $mimeType = mime_content_type($filePath);
-    
+
     return response()->file($filePath, [
         'Content-Type' => $mimeType,
         'Access-Control-Allow-Origin' => '*',
@@ -44,13 +44,13 @@ Route::options('/images/{path}', function () {
 // Serve uploads dengan CORS headers
 Route::get('/uploads/{path}', function ($path) {
     $filePath = public_path('uploads/' . $path);
-    
+
     if (!file_exists($filePath)) {
         abort(404);
     }
-    
+
     $mimeType = mime_content_type($filePath);
-    
+
     return response()->file($filePath, [
         'Content-Type' => $mimeType,
         'Access-Control-Allow-Origin' => '*',
@@ -90,7 +90,7 @@ Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.
 Route::get('/admins', [AdminController::class, 'index'])->name('pages.data-admin'); // <-- PENTING
 Route::post('/admins', [AdminController::class, 'store'])->name('admins.store');
 Route::put('/admins/{admin}', [AdminController::class, 'update'])->name('admins.update');
-Route::delete('/admins/{admin}', [AdminController::class, 'destroy'])->name('admins.destroy');  
+Route::delete('/admins/{admin}', [AdminController::class, 'destroy'])->name('admins.destroy');
 
 Route::resource('data-wisata', WisataController::class)
     ->parameters(['data-wisata' => 'wisata']) // Supaya di Controller pakainya (Wisata $wisata)
@@ -100,7 +100,7 @@ Route::resource('data-wisata', WisataController::class)
 Route::resource('data-transaksi', DataTransaksiController::class)
     ->only(['index', 'update', 'destroy'])
     // --- PERUBAHAN: Pastikan 'transaction' cocok dengan variabel di controller ---
-    ->parameters(['data-transaksi' => 'transaction']) 
+    ->parameters(['data-transaksi' => 'transaction'])
     ->names('transaksi');
 
 
@@ -108,4 +108,3 @@ Route::resource('data-parkir', DataParkirController::class)
     ->only(['index', 'update', 'destroy'])
     ->parameters(['data-parkir' => 'parkirBooking'])
     ->names('parkir');
-    

@@ -49,7 +49,7 @@
                 <tr>
                     <th scope="col" class="px-6 py-3">No</th>
                     <th scope="col" class="px-6 py-3">Username</th>
-                    <th scope="col" class="px-6 py-3">Nama Lengkap</th>
+                    <th scope="col" class="px-6 py-3">Email</th>
                     <th scope="col" class="px-6 py-3">No. WA</th>
                     {{-- <th scope="col" class="px-6 py-3">Role</th> --}} {{-- HILANGKAN ROLE --}}
                     <th scope="col" class="px-6 py-3">Aksi</th>

@@ -624,9 +624,22 @@
             try {
                 const response = await fetch(`${BASE_URL}/api/dolanbanyumas/register`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify(data)
                 });
+
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    showAlert('register-alert', `❌ Server error. Response bukan JSON. Cek console untuk detail.`, 'error');
+                    updateResponse('register-response', { error: 'Non-JSON response', details: text.substring(0, 500) });
+                    return;
+                }
 
                 const result = await response.json();
                 updateResponse('register-response', result);
@@ -645,11 +658,21 @@
                     // Focus on first OTP input
                     document.getElementById('otp-1').focus();
                 } else {
-                    showAlert('register-alert', `❌ ${result.message || 'Registrasi gagal'}`, 'error');
+                    // Handle validation errors
+                    if (result.errors) {
+                        let errorMessages = '<strong>Terjadi kesalahan:</strong><br>';
+                        for (const [field, messages] of Object.entries(result.errors)) {
+                            errorMessages += `• ${messages[0]}<br>`;
+                        }
+                        showAlert('register-alert', `❌ ${errorMessages}`, 'error');
+                    } else {
+                        showAlert('register-alert', `❌ ${result.message || 'Registrasi gagal'}`, 'error');
+                    }
                 }
             } catch (error) {
+                console.error('Register error:', error);
                 showAlert('register-alert', `❌ Error: ${error.message}`, 'error');
-                updateResponse('register-response', { error: error.message });
+                updateResponse('register-response', { error: error.message, stack: error.stack });
             } finally {
                 setLoading('reg-btn-text', 'reg-btn-loading', false);
             }
@@ -719,9 +742,22 @@
             try {
                 const response = await fetch(`${BASE_URL}/api/dolanbanyumas/forgot-password`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ email })
                 });
+
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    showAlert('forgot-alert', `❌ Server error. Response bukan JSON. Cek console untuk detail.`, 'error');
+                    updateResponse('forgot-response', { error: 'Non-JSON response', details: text.substring(0, 500) });
+                    return;
+                }
 
                 const result = await response.json();
                 updateResponse('forgot-response', result);
@@ -740,10 +776,21 @@
                     // Focus on first OTP input
                     document.getElementById('forgot-otp-1').focus();
                 } else {
-                    showAlert('forgot-alert', `❌ ${result.message || 'Request gagal'}`, 'error');
+                    // Handle validation errors
+                    if (result.errors) {
+                        let errorMessages = '<strong>Terjadi kesalahan:</strong><br>';
+                        for (const [field, messages] of Object.entries(result.errors)) {
+                            errorMessages += `• ${messages[0]}<br>`;
+                        }
+                        showAlert('forgot-alert', `❌ ${errorMessages}`, 'error');
+                    } else {
+                        showAlert('forgot-alert', `❌ ${result.message || 'Request gagal'}`, 'error');
+                    }
                 }
             } catch (error) {
+                console.error('Forgot password error:', error);
                 showAlert('forgot-alert', `❌ Error: ${error.message}`, 'error');
+                updateResponse('forgot-response', { error: error.message, stack: error.stack });
             } finally {
                 setLoading('forgot-btn-text', 'forgot-btn-loading', false);
             }

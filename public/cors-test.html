@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CORS Test</title>
+</head>
+
+<body>
+    <h1>CORS Image Test</h1>
+    <div id="result"></div>
+    <img id="testImage" style="max-width: 500px;">
+
+    <script>
+        const imageUrl = 'http://localhost:8000/images/alunalun.jpg';
+        const resultDiv = document.getElementById('result');
+        const img = document.getElementById('testImage');
+
+        // Test 1: Fetch headers
+        fetch(imageUrl)
+            .then(response => {
+                resultDiv.innerHTML += '<h2>✅ Fetch Success!</h2>';
+                resultDiv.innerHTML += '<p>Status: ' + response.status + '</p>';
+                resultDiv.innerHTML += '<p>CORS Header: ' + response.headers.get('Access-Control-Allow-Origin') + '</p>';
+
+                // Test 2: Load image
+                img.src = imageUrl;
+                img.onload = () => {
+                    resultDiv.innerHTML += '<h2>✅ Image Loaded!</h2>';
+                };
+                img.onerror = (e) => {
+                    resultDiv.innerHTML += '<h2>❌ Image Load Failed</h2>';
+                    resultDiv.innerHTML += '<p>' + e + '</p>';
+                };
+            })
+            .catch(error => {
+                resultDiv.innerHTML += '<h2>❌ Fetch Failed</h2>';
+                resultDiv.innerHTML += '<p>' + error + '</p>';
+            });
+    </script>
+</body>
+
+</html>
