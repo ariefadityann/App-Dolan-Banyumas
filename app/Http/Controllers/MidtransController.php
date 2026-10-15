@@ -93,33 +93,59 @@ class MidtransController extends Controller
      */
     public function notificationHandler(Request $request)
     {
+        // Response ramah jika diakses melalui browser (GET)
+        if ($request->isMethod('get')) {
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Endpoint Webhook Notifikasi Midtrans aktif. Midtrans akan mengirimkan data dengan metode HTTP POST.',
+            ]);
+        }
+
+        // Log request masuk untuk mempermudah pemantauan
+        \Log::info('Midtrans Notification Received:', $request->all());
+
         // Konfigurasi ulang untuk validasi notifikasi
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
 
         try {
-            $notif = new \Midtrans\Notification();
+            $transactionStatus = null;
+            $type = null;
+            $order_id = null;
+            $fraud = null;
 
-            $transactionStatus = $notif->transaction_status;
-            $type = $notif->payment_type;
-            $order_id = $notif->order_id;
-            $fraud = $notif->fraud_status;
+            // Coba ambil via SDK Midtrans, dengan fallback ke Request body jika parsing SDK gagal
+            try {
+                $notif = new \Midtrans\Notification();
+                $transactionStatus = $notif->transaction_status;
+                $type = $notif->payment_type;
+                $order_id = $notif->order_id;
+                $fraud = $notif->fraud_status;
+            } catch (\Exception $sdkEx) {
+                \Log::warning('Midtrans Notification SDK fallback triggered: ' . $sdkEx->getMessage());
+                $transactionStatus = $request->input('transaction_status');
+                $type = $request->input('payment_type');
+                $order_id = $request->input('order_id');
+                $fraud = $request->input('fraud_status');
+            }
 
-            // --- INI ADALAH LOGIKA "PINTAR" ---
+            if (!$order_id) {
+                return response()->json(['message' => 'Order ID tidak ditemukan dalam payload notifikasi'], 400);
+            }
+
+            // --- LOGIKA PENCARIAN ORDER ---
             $booking = null; 
 
             if (Str::startsWith($order_id, 'PARK-')) {
-                // Ini adalah booking parkir, cari di tabel parkir_bookings
+                // Booking parkir, cari di tabel parkir_bookings
                 $booking = ParkirBooking::where('order_id', $order_id)->first();
             } else if (Str::startsWith($order_id, 'TRX-')) {
-                // Ini adalah tiket wisata, cari di tabel transactions
+                // Tiket wisata, cari di tabel transactions
                 $booking = Transaction::where('order_id', $order_id)->first();
             }
-            // --- AKHIR LOGIKA "PINTAR" ---
-
 
             if (!$booking) {
-                // Jika tidak ditemukan di kedua tabel
+                \Log::warning("Transaction/Booking not found for order_id: {$order_id}");
                 return response()->json(['message' => 'Transaction/Booking not found for order_id: ' . $order_id], 404);
             }
 
@@ -153,9 +179,12 @@ class MidtransController extends Controller
                 $booking->update(['status' => 'canceled']);
             }
 
+            \Log::info("Midtrans Notification processed successfully for {$order_id}, new status: {$booking->status}");
+
             return response()->json(['message' => 'Notification processed for ' . $order_id]);
 
         } catch (\Exception $e) {
+            \Log::error('Error processing Midtrans notification: ' . $e->getMessage());
             return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
         }
     }

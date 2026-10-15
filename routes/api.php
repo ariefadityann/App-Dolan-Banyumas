@@ -7,6 +7,10 @@ use App\Models\User;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\ParkirBookingController;
 use App\Http\Controllers\Admin\WisataApiController;
+use App\Http\Controllers\CommentApiController;
+
+// Rute Notifikasi Midtrans (Webhook Publik) - Direct: /api/midtrans/notification
+Route::match(['get', 'post'], '/midtrans/notification', [MidtransController::class, 'notificationHandler']);
 
 Route::prefix('dolanbanyumas')->group(function () {
 
@@ -28,8 +32,8 @@ Route::prefix('dolanbanyumas')->group(function () {
     Route::post('/midtrans/transaction', [MidtransController::class, 'createTransaction']);
     Route::post('/midtrans/booking-parkir', [ParkirBookingController::class, 'createBooking']);
     
-    // Rute Notifikasi (HARUS PUBLIK agar bisa diakses Midtrans)
-    Route::post('/midtrans/notification', [MidtransController::class, 'notificationHandler']);
+    // Rute Notifikasi (Bisa diakses juga via prefix: /api/dolanbanyumas/midtrans/notification)
+    Route::match(['get', 'post'], '/midtrans/notification', [MidtransController::class, 'notificationHandler']);
 
     // === WISATA API ROUTES (PUBLIC) ===
     // Get wisata dengan pagination & filter
@@ -47,6 +51,9 @@ Route::prefix('dolanbanyumas')->group(function () {
     // Get available categories
     Route::get('/wisata-categories', [WisataApiController::class, 'categories']);
 
+    // === KOMENTAR & ULASAN WISATA (PUBLIC) ===
+    Route::get('/wisata/{wisataId}/comments', [CommentApiController::class, 'getCommentsByWisata']);
+
     // --- RUTE YANG DIPROTEKSI ---
     // Semua rute di dalam grup ini memerlukan Token otentikasi
     Route::middleware('auth:sanctum')->group(function () {
@@ -58,6 +65,11 @@ Route::prefix('dolanbanyumas')->group(function () {
         Route::get('/midtrans/transactions', [MidtransController::class, 'getTransactions']);
         Route::get('/midtrans/booking-parkir', [ParkirBookingController::class, 'getAllBookings']);
         Route::post('/midtrans/cancel-booking', [MidtransController::class, 'cancelBooking']);
+
+        // Komentar Wisata (Kirim, Riwayat, Hapus)
+        Route::post('/comments', [CommentApiController::class, 'store']);
+        Route::get('/user/comments', [CommentApiController::class, 'getUserComments']);
+        Route::delete('/comments/{id}', [CommentApiController::class, 'destroy']);
 
         // Anda bisa pindahkan rute GET user ke sini juga
         Route::get('/users', function () {

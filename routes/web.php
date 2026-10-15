@@ -8,6 +8,7 @@ use App\Http\Controllers\DataParkirController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginAdminController;
 use App\Http\Controllers\Admin\WisataController;
+use App\Http\Controllers\DataKomentarController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -108,3 +109,8 @@ Route::resource('data-parkir', DataParkirController::class)
     ->only(['index', 'update', 'destroy'])
     ->parameters(['data-parkir' => 'parkirBooking'])
     ->names('parkir');
+
+Route::resource('data-komentar', DataKomentarController::class)
+    ->only(['index', 'destroy'])
+    ->parameters(['data-komentar' => 'comment'])
+    ->names('komentar');

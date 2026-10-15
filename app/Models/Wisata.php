@@ -58,4 +58,9 @@ public function getImagesUrlsAttribute()
         return url(ltrim($imagePath, '/'));
     }, $this->images);
 }
+
+public function comments()
+{
+    return $this->hasMany(Comment::class)->latest();
+}
 }
